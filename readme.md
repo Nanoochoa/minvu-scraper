@@ -4,12 +4,13 @@
 # Description
 
 Scrape [MINVU D.S.01 beneficiaries](http://transparencia.minvu.cl/IRIS_FILES/Transparencia/beneficio_regiones_buscador.html).
-# Usage:
+
+# Usage
 
 ```bash
-usage: argmark [-h] -y YEAR -f FILENAME
+python main.py [-h] -y YEAR -f FILENAME
 ```
-# Arguments
+## Arguments
 
 |short|long|default|help|
 | :--- | :--- | :--- | :--- |
