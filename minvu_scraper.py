@@ -3,9 +3,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm.auto import tqdm
 
-# url = 'http://transparencia.minvu.cl/IRIS_FILES/Transparencia/2011/beneficio_DS01_13reg_1211.html'
-# url = 'http://transparencia.minvu.cl/IRIS_FILES/Transparencia/2012/beneficio_DS01_13reg_0112.html'
-
 def scrape_monthyear(url:str) -> pd.DataFrame:
     
     # Get paginator hrefs from soup of single page
@@ -14,7 +11,7 @@ def scrape_monthyear(url:str) -> pd.DataFrame:
         try:
             hrefs = [a['href'] for a in center_blocks[0].find_all(href=True)]
         except IndexError:
-            return None
+            return []
         return hrefs
 
     # Extract table from soup of single page
@@ -40,7 +37,7 @@ def scrape_monthyear(url:str) -> pd.DataFrame:
     # Get all tables (go through pages)
     df = [extract_table(soup)]
     hrefs = get_paginator_hrefs(soup)
-    for href in tqdm(hrefs, desc=f'pages in {month}/{year}'):
+    for href in tqdm(hrefs, desc=f'additional pages in {month}/{year}'):
         url = base_url + '/' + href
         page = requests.get(url)
         soup = BeautifulSoup(page.text, 'lxml')
@@ -72,7 +69,3 @@ def scrape_year(year:int) -> pd.DataFrame:
         # else, append non-empty list of scraped table
         df.append(month_tables)
     return pd.concat(df)
-
-
-
-
