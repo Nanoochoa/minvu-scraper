@@ -87,4 +87,9 @@ def scrape_year(year:int, timeout=3) -> pd.DataFrame:
         
         # else, append non-empty list of scraped table
         df.append(month_tables)
-    return pd.concat(df)
+    
+    # Concatenate dataframes and exit
+    if len(df) > 0:
+        return pd.concat(df)
+    else:
+        exit('\nno data collected')
