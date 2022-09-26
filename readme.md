@@ -15,6 +15,6 @@ python main.py [-h] -y YEAR -f FILENAME
 |short|long|default|help|
 | :--- | :--- | :--- | :--- |
 |`-h`|`--help`||show this help message and exit|
-|`-y`|`--year`|`None`|year to be scraped|
-|`-f`|`--filename`|`None`|CSV filename to write output|
+|`-y`|`--year`|`None`|year to scrape|
+|`-f`|`--filename`|`None`|filename of CSV output|
 |`-t`|`--timeout`|`3`|request timeout|
