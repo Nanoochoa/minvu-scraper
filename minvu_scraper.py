@@ -1,7 +1,19 @@
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm.auto import tqdm
+
+def init_request_session():
+    # Configure request session
+    req_session = requests.Session()
+    retries = Retry(
+        total=5,
+        backoff_factor=0.1,
+        status_forcelist=[500, 502, 503, 504]
+    )
+    req_session.mount('http://', HTTPAdapter(max_retries=retries))
+    return req_session
 
 def scrape_monthyear(url:str, timeout) -> pd.DataFrame:
     
@@ -27,7 +39,10 @@ def scrape_monthyear(url:str, timeout) -> pd.DataFrame:
     base_url, init_href = url.rsplit('/', 1)
     month = url.rsplit('_', 1)[1][0:2]
     year = url.rsplit('/', 1)[0].rsplit('/', 1)[1]
-    page = requests.get(url, timeout=timeout)
+
+    # Request page
+    req_session = init_request_session()
+    page = req_session.get(url, timeout=timeout)
     soup = BeautifulSoup(page.text, 'lxml')
 
     # Check if there is a table to continue
@@ -39,7 +54,7 @@ def scrape_monthyear(url:str, timeout) -> pd.DataFrame:
     hrefs = get_paginator_hrefs(soup)
     for href in tqdm(hrefs, desc=f'additional pages in {month}/{year}'):
         url = base_url + '/' + href
-        page = requests.get(url, timeout=timeout)
+        page = req_session.get(url, timeout=timeout)
         soup = BeautifulSoup(page.text, 'lxml')
         table = extract_table(soup)
         df.append(table)
@@ -52,9 +67,13 @@ def scrape_year(year:int, timeout=3) -> pd.DataFrame:
     df = []
     empty_months = []
     for month in range(1, 13):
+        # Set up mont-year URL
         yymm =  f'{month:02}' + str(abs(year) % 100)
         url = base_url + yymm + '.html'
-        page = requests.get(url, timeout=timeout)
+
+        # request page
+        req_session = init_request_session()
+        page = req_session.get(url, timeout=timeout)
 
         # try to scrape month tables only if return code is not error
         if page.status_code != 404:
