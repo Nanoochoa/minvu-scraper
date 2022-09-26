@@ -8,4 +8,4 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--timeout', default=10, type=int, help='request timeout', required=False)
     args = parser.parse_args()
     df = scrape_year(args.year, timeout=args.timeout)
-    df.to_csv(args.filename)
+    df.to_csv(args.filename, index=False)
