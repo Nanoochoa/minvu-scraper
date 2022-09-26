@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm.auto import tqdm
 
-def scrape_monthyear(url:str) -> pd.DataFrame:
+def scrape_monthyear(url:str, timeout) -> pd.DataFrame:
     
     # Get paginator hrefs from soup of single page
     def get_paginator_hrefs(soup:BeautifulSoup) -> list:
@@ -27,7 +27,7 @@ def scrape_monthyear(url:str) -> pd.DataFrame:
     base_url, init_href = url.rsplit('/', 1)
     month = url.rsplit('_', 1)[1][0:2]
     year = url.rsplit('/', 1)[0].rsplit('/', 1)[1]
-    page = requests.get(url)
+    page = requests.get(url, timeout=timeout)
     soup = BeautifulSoup(page.text, 'lxml')
 
     # Check if there is a table to continue
@@ -39,7 +39,7 @@ def scrape_monthyear(url:str) -> pd.DataFrame:
     hrefs = get_paginator_hrefs(soup)
     for href in tqdm(hrefs, desc=f'additional pages in {month}/{year}'):
         url = base_url + '/' + href
-        page = requests.get(url)
+        page = requests.get(url, timeout=timeout)
         soup = BeautifulSoup(page.text, 'lxml')
         table = extract_table(soup)
         df.append(table)
@@ -47,18 +47,18 @@ def scrape_monthyear(url:str) -> pd.DataFrame:
     return pd.concat(df)
 
 
-def scrape_year(year:int) -> pd.DataFrame:
+def scrape_year(year:int, timeout=3) -> pd.DataFrame:
     base_url = f'http://transparencia.minvu.cl/IRIS_FILES/Transparencia/{year}/beneficio_DS01_13reg_'
     df = []
     empty_months = []
     for month in range(1, 13):
         yymm =  f'{month:02}' + str(abs(year) % 100)
         url = base_url + yymm + '.html'
-        page = requests.get(url)
+        page = requests.get(url, timeout=timeout)
 
         # try to scrape month tables only if return code is not error
         if page.status_code != 404:
-            month_tables = scrape_monthyear(url)
+            month_tables = scrape_monthyear(url, timeout=timeout)
 
         # skip month and report if 404 or no tables in page
         if page.status_code == 404 or month_tables is None:
